@@ -9,7 +9,7 @@ type Auth struct {
 	Password string
 }
 
-// new constructs our Auth values
+// New constructs our Auth values
 func New(username, password string) Auth {
 	return Auth{
 		Password: password,

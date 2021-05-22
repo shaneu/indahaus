@@ -39,6 +39,7 @@ indahaus:
 		-t indahaus-amd64:1.0 \
 		--build-arg VCS_REF=`git rev-parse HEAD` \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%d%H:%M:%SZ"` \
+		--build-arg PORT=8080 \
 		.
 
 # ===================================================================

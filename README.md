@@ -13,13 +13,13 @@
 - [Deployment](#deployment)
 - [Usage](#usage)
 - [Built Using](#built_using)
-- [TODO](../TODO.md)
+- [TODO](#todo)
 - [Author](#author)
 - [Acknowledgments](#acknowledgement)
 
 ## 🧐 About <a name = "about"></a>
 
-indahaus is the exciting new graphql api that lets a stores a users DNS blacklist queries for fast retrieval
+indahaus is the exciting new graphql api that stores a users DNS blacklist queries for fast retrieval
 
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
@@ -148,7 +148,7 @@ Runs the test suites
 
 This application takes a layered architecture approach.
 
-At the bottom layer are the packages in the `pkg` dir. The are the kinds of packages that could be ripped out and moved
+At the bottom layer are the packages in the `pkg` dir. These are the kinds of packages that could be ripped out and moved
 into any project that needs them. They contain no business logic or cross cutting concerns like logging and expose a simple api. 
 
 The next layer is our business logic/data layer, in the `internal` dir. Packages in this layer can require packages from the `pkg` dir, but not visa versa. 
@@ -169,7 +169,12 @@ parameters and override them with env vars
 - [gqlgen](github.com/99designs/gqlgen) - Takes a lot of the boiler plate out of creating a graphql api all while providing a high level of type safety
 - [go-cmp](github.com/google/go-cmp) - For doing easy comparisons between fields in our tests
 
-## ✍️ Authors <a name = "authors"></a>
+## ✍️ TODO <a name = "todo"></a>
+
+- Integration tests: go has amazing built in support for running integration tests using the httptest package
+- Install a migration framework to allow us to update, and roll back, or database schema
+
+## ✍️ Author <a name = "author"></a>
 
 [@shaneu](https://github.com/shaneu)
 

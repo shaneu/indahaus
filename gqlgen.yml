@@ -37,10 +37,6 @@ omit_slice_element_pointers: false
 autobind:
   - "github.com/shaneu/indahaus/graph/model"
 
-######################### DO NOT REMOVE #################################
-# added so gqlgen would auto generate the UUID resolver
-struct_tag: gqlgen
-
 # This section declares type mapping between the GraphQL and go type systems
 #
 # The first line in each type will be used as defaults for resolver arguments and
@@ -61,5 +57,3 @@ models:
   Time:
     model:
       - github.com/99designs/gqlgen/graphql.Time
-  IPDetails:
-    model: "github.com/shaneu/indahaus/graph/model.IPDetails"

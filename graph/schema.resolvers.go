@@ -11,15 +11,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shaneu/indahaus/graph/generated"
 	"github.com/shaneu/indahaus/graph/model"
-	"github.com/vektah/gqlparser/v2/gqlerror"
-
 	"github.com/shaneu/indahaus/internal/data/ipresult"
 	"github.com/shaneu/indahaus/internal/mid"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
-
-func (r *iPDetailsResolver) UUID(ctx context.Context, obj *model.IPDetails) (string, error) {
-	return obj.ID, nil
-}
 
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.IPDetails, error) {
 	v := ctx.Value(mid.RequestValueKey).(*mid.RequestValues)
@@ -28,9 +23,9 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 
 	// We use a buffered channel of len(ip) so in the event one of the child goroutines errors and we return
 	// from the parent goroutine we don't want the other children blocking trying to send to the resultChan
-	// which won't have a receiver anymore.  With a buffered chan those writes won't block so the other children
+	// which won't have a receiver anymore. With a buffered chan those writes won't block so the other children
 	// will be able to exit and we avoid leaking goroutines. It also gives us the added benefit of supporting
-	// partial failure - one goroutine might error but that doesn't mean the others won't succeed in the  background.
+	// partial failure - one goroutine might error but that doesn't mean the others won't succeed in the background.
 	// There is a tradeoff that the user will get an error from the graphql response and won't know that the
 	// other writes were successful, so they may try to enqueue the same ip addresses again, but no data will
 	// be corrupted by doing that and hopefully on the next attempt the user won't get an error.
@@ -54,16 +49,9 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 				e <- err
 			}
 
-			// The ipresult package returns a type of ipresult.IPResult while the resolver expects a pointer to a
-			// type of model.IPDetails. It is my firm belief that the internal packages should have no knowledge of
-			// the packages requiring them. In other words it would be incorrect for QueryByIP to return a *model.IPDetails
-			// as a lower level package should have no knowledge of anything to do with layers above it, such as
-			// the graphql layer. We could be lazy here and simply cast model.IPDetails(result) since the types
-			//  _just so happen_ to have the same fields but its better to be explicit so if the result returned from
-			// QueryByIP ever has additional fields we shouldn't have to come back and refactor this code
 			result := model.IPDetails{
 				CreatedAt:     res.CreatedAt,
-				ID:            res.ID,
+				UUID:          res.ID,
 				IPAddress:     res.IPAddress,
 				ResponseCodes: res.ResponseCodes,
 				UpdatedAt:     res.UpdatedAt,
@@ -105,10 +93,9 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*model.IPD
 		return nil, gqlerror.Errorf("error getting ip address")
 	}
 
-	// see comment in Enqueue for explanation
 	response := model.IPDetails{
 		CreatedAt:     result.CreatedAt,
-		ID:            result.ID,
+		UUID:          result.ID,
 		IPAddress:     result.IPAddress,
 		ResponseCodes: result.ResponseCodes,
 		UpdatedAt:     result.UpdatedAt,
@@ -117,15 +104,11 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*model.IPD
 	return &response, nil
 }
 
-// IPDetails returns generated.IPDetailsResolver implementation.
-func (r *Resolver) IPDetails() generated.IPDetailsResolver { return &iPDetailsResolver{r} }
-
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-type iPDetailsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

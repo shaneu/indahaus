@@ -8,7 +8,6 @@ import (
 	"errors"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -36,7 +35,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	IPDetails() IPDetailsResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -62,9 +60,6 @@ type ComplexityRoot struct {
 	}
 }
 
-type IPDetailsResolver interface {
-	UUID(ctx context.Context, obj *model.IPDetails) (string, error)
-}
 type MutationResolver interface {
 	Enqueue(ctx context.Context, ip []string) ([]*model.IPDetails, error)
 }
@@ -328,14 +323,14 @@ func (ec *executionContext) _IPDetails_uuid(ctx context.Context, field graphql.C
 		Object:     "IPDetails",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.IPDetails().UUID(rctx, obj)
+		return obj.UUID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1751,38 +1746,29 @@ func (ec *executionContext) _IPDetails(ctx context.Context, sel ast.SelectionSet
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("IPDetails")
 		case "uuid":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._IPDetails_uuid(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._IPDetails_uuid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "created_at":
 			out.Values[i] = ec._IPDetails_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "updated_at":
 			out.Values[i] = ec._IPDetails_updated_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "response_codes":
 			out.Values[i] = ec._IPDetails_response_codes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "ip_address":
 			out.Values[i] = ec._IPDetails_ip_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

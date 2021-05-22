@@ -105,7 +105,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 	ipRes.UpdatedAt = now.UTC()
 	ipRes.ResponseCodes = uIP.ResponseCodes
 
-	const q = `UPDATE ip_results SET "updated_at" = $1,	"response_codes" = $2 WHERE ip_address = $3`
+	const q = `UPDATE ip_results SET "updated_at" = $1, "response_codes" = $2 WHERE ip_address = $3`
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
