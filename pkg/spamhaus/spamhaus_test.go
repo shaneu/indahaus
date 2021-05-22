@@ -25,11 +25,11 @@ func queryNoResults(t *testing.T) {
 	testID := 0
 	t.Logf("\tTest %d:\tWhen looking up an address not in spamhaus.", testID)
 	response, err := spamhaus.QueryDNSBL("127.0.0.1")
-	if err == nil {
-		t.Fatalf("\t%s\tTest %d:\tShould return error for no host : %v", failure, testID, response)
+	if err != nil {
+		t.Fatalf("\t%s\tTest %d:\tShould not return error for no host : %v", failure, testID, response)
 	}
 
-	t.Logf("\t%s\tTest %d:\tShould return error for no host : %v", success, testID, err)
+	t.Logf("\t%s\tTest %d:\tShould not return error for no host : %v", success, testID, err)
 }
 
 func queryKnownSpam(t *testing.T) {

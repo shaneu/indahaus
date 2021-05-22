@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"expvar"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -21,7 +20,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+var build = "develop"
+
 func main() {
+	// for our usecase human readable logs instead of a structured logging solution will be adequate until and unless
+	// we decide we want structured logging
 	log := log.New(os.Stdout, "API: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
 
 	if err := run(log); err != nil {
@@ -30,7 +33,7 @@ func main() {
 	}
 }
 
-// run handles intitializing our app, starting our server, and will return an error in the case of failure
+// run handles intitializing our app and will return an error in the case of failure
 func run(log *log.Logger) error {
 	// ===========================================================
 	// Initialize configuration
@@ -48,13 +51,15 @@ func run(log *log.Logger) error {
 			ShutdownTimeout time.Duration
 			WriteTimeout    time.Duration
 		}
-		Auth    auth.Auth
-		Version struct {
-			Build string
+		Auth struct {
+			Password string
+			Username string
 		}
 	}
 
-	viper.SetConfigFile("config.yaml")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 	// supports overriding nested config fields with env vars, see
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -69,9 +74,9 @@ func run(log *log.Logger) error {
 	}
 
 	// Register `build` var with expvar so /debug/vars will reflect current build
-	expvar.NewString("build").Set(cfg.Version.Build)
+	expvar.NewString("build").Set(build)
 
-	log.Printf("main: Application initializing: version %q", cfg.Version.Build)
+	log.Printf("main: Application initializing: version %q", build)
 	defer log.Printf("main: completed")
 
 	// ===========================================================
@@ -83,13 +88,16 @@ func run(log *log.Logger) error {
 		Username: cfg.DB.Username,
 	})
 	if err != nil {
-		fmt.Println(err)
 		return errors.Wrap(err, "connecting to db")
 	}
 	defer func() {
 		log.Printf("main: Database Stopping")
 		db.Close()
 	}()
+
+	// ===========================================================
+	// Initialize auth
+	a := auth.New(cfg.Auth.Username, cfg.Auth.Password)
 
 	// ===========================================================
 	// Initialize debug endpoint
@@ -108,7 +116,7 @@ func run(log *log.Logger) error {
 
 	api := http.Server{
 		Addr:         net.JoinHostPort(cfg.Address, cfg.Port),
-		Handler:      handlers.API(cfg.Version.Build, shutdown, &cfg.Auth, db, log),
+		Handler:      handlers.API(build, shutdown, a, db, log),
 		ReadTimeout:  cfg.App.ReadTimeout,
 		WriteTimeout: cfg.App.WriteTimeout,
 	}
@@ -120,7 +128,8 @@ func run(log *log.Logger) error {
 		serverErrors <- api.ListenAndServe()
 	}()
 
-	fmt.Println("before select")
+	// select blocks until it either receives an error from listenAndServe or it receives a shut signal signal
+	// it which cases it attempts to do a graceful shutdown
 	select {
 	case err := <-serverErrors:
 		return errors.Wrap(err, "server error")
@@ -135,7 +144,6 @@ func run(log *log.Logger) error {
 			return errors.Wrap(err, "could not stop server gracefully")
 		}
 	}
-	fmt.Println("after select")
 
 	return nil
 }

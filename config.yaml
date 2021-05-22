@@ -3,9 +3,9 @@ app:
   shutdownTimeout: 5s
   writeTimeout: 5s
 db:
-  uri: file:test.db?_busy_timeout=5000&_journal_mode=WAL
-  Username: sqlite3
-  Password: sqlite3
+  uri: file:indahaus.db?_busy_timeout=5000&_journal_mode=WAL
+  username: sqlite3
+  password: sqlite3
 port: 8080
 auth:
   username: "*****"

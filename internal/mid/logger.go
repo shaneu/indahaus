@@ -12,7 +12,7 @@ func Logger(log *log.Logger) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			v := r.Context().Value(RequestValueKey).(*RequestValues)
 
-			log.Printf("%s : started	  : %s %s -> %s",
+			log.Printf("%s : started	: %s %s -> %s",
 				v.TraceID,
 				r.Method, r.URL.Path, r.RemoteAddr,
 			)

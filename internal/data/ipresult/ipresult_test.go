@@ -48,7 +48,7 @@ func setup(t *testing.T) (*log.Logger, *sqlx.DB, func()) {
 		db.Close()
 		tempFile.Close()
 		if err := os.Remove(tempFile.Name()); err != nil {
-			t.Fatalf("unable to remove temp dir %s : %v", tempFile.Name(), err)
+			t.Fatalf("unable to remove temp file %s : %v", tempFile.Name(), err)
 		}
 	}
 
@@ -65,9 +65,9 @@ func TestIPResult(t *testing.T) {
 	// Setup: create a ipresult store
 	s := ipresult.New(log, db)
 
-	testId := 0
+	testID := 0
 
-	t.Logf("\tTest %d:\tWhen inserting an IP result.", testId)
+	t.Logf("\tTest %d:\tWhen inserting an IP result.", testID)
 	// ============================================================================
 	// Create an ip result
 	ctx := context.Background()
@@ -81,22 +81,22 @@ func TestIPResult(t *testing.T) {
 
 	ipRes, err := s.Create(ctx, traceID, newIP, now)
 	if err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to create IP result : %s.", failure, testId, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to create IP result : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to create IP result.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould be able to create IP result.", success, testID)
 
 	// ============================================================================
 	// Query by IP address
 	saved, err := s.QueryByIP(ctx, traceID, ipRes.IPAddress)
 	if err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to retrieve result by IP: %s.", failure, testId, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to retrieve result by IP: %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to retrieve user by IP.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould be able to retrieve user by IP.", success, testID)
 
 	if diff := cmp.Diff(ipRes, saved); diff != "" {
-		t.Fatalf("\t%s\tTest %d:\tShould get back the same IP result. Diff:\n %s.", failure, testId, diff)
+		t.Fatalf("\t%s\tTest %d:\tShould get back the same IP result. Diff:\n %s.", failure, testID, diff)
 	}
-	t.Logf("\t%s\tTest %d:\tShould get back the same IP result.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould get back the same IP result.", success, testID)
 
 	upd := ipresult.UpdateIPResult{
 		ResponseCodes: "127.0.0.4",
@@ -105,9 +105,9 @@ func TestIPResult(t *testing.T) {
 	// ============================================================================
 	// Update IP result
 	if _, err := s.Update(ctx, traceID, ipRes.IPAddress, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to update IP result : %s.", failure, testId, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to update IP result : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to update IP result.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould be able to update IP result.", success, testID)
 
 	// ============================================================================
 	// AddOrUpdate (Add)
@@ -117,9 +117,9 @@ func TestIPResult(t *testing.T) {
 	newIPAddr := "18.205.180.52"
 
 	if _, err := s.AddOrUpdate(ctx, traceID, newIPAddr, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testId, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
 
 	upd = ipresult.UpdateIPResult{
 		ResponseCodes: "127.0.1.0",
@@ -128,9 +128,9 @@ func TestIPResult(t *testing.T) {
 	// ============================================================================
 	// AddOrUpdate  (Update)
 	if _, err := s.AddOrUpdate(ctx, traceID, ipRes.IPAddress, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testId, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
 
 	saved, err = s.QueryByIP(ctx, traceID, ipRes.IPAddress)
 	if err != nil {
@@ -138,7 +138,7 @@ func TestIPResult(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(saved.ResponseCodes, upd.ResponseCodes); diff != "" {
-		t.Fatalf("\t%s\tTest %d:\tShould get back the updated response codes. Diff:\n %s.", failure, testId, diff)
+		t.Fatalf("\t%s\tTest %d:\tShould get back the updated response codes. Diff:\n %s.", failure, testID, diff)
 	}
-	t.Logf("\t%s\tTest %d:\tShould get back the updated response codes.", success, testId)
+	t.Logf("\t%s\tTest %d:\tShould get back the updated response codes.", success, testID)
 }

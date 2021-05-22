@@ -37,7 +37,11 @@ func run(log *log.Logger) error {
 		}
 	}
 
-	viper.SetConfigFile("config.yaml")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("..")
+	viper.AddConfigPath("../..")
 	viper.AutomaticEnv()
 	// supports overriding nested config fields with env vars, see
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

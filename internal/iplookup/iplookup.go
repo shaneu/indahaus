@@ -16,12 +16,13 @@ func New(log *log.Logger) Store {
 	}
 }
 
-// LookupIpAddresses is just a wrapper over spamhaus.QueryDNSBL that we do our business logic and
+// LookupIPAddresses is just a wrapper over spamhaus.QueryDNSBL that we can add our business logic and
 // our cross cutting concerns like logging, which don't belong at the pkg level
-func (s Store) LookupIpAddress(traceId string, ip string) ([]string, error) {
-	s.log.Printf("%s : query dnsbl for : %s", traceId, ip)
+func (s Store) LookupIPAddress(traceID string, ip string) ([]string, error) {
+	s.log.Printf("%s : query dnsbl for : %s", traceID, ip)
 	cs, err := spamhaus.QueryDNSBL(ip)
 	if err != nil {
+		s.log.Printf("%s : error %v", traceID, err)
 		return nil, err
 	}
 

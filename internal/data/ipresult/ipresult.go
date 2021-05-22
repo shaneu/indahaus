@@ -31,7 +31,7 @@ func New(log *log.Logger, db *sqlx.DB) Store {
 }
 
 // Create inserts a new row into the db
-func (s Store) Create(ctx context.Context, traceId string, newIP NewIPResult, now time.Time) (IPResult, error) {
+func (s Store) Create(ctx context.Context, traceID string, newIP NewIPResult, now time.Time) (IPResult, error) {
 	ipRes := IPResult{
 		CreatedAt:     now.UTC(),
 		ID:            uuid.New().String(),
@@ -40,22 +40,27 @@ func (s Store) Create(ctx context.Context, traceId string, newIP NewIPResult, no
 		UpdatedAt:     now.UTC(),
 	}
 
+	// we're writing our sql statements by hand rather than leverage some abstraction like an ORM. At this
+	// point in the projects lifecycle it will aid debugging and maintanice to not prematurely reach for an abstraction
+	// even if it means we write a little more code by hand
 	const q = `INSERT INTO ip_results
 		(id, created_at, updated_at, ip_address, response_codes)	
 		VALUES ($1, $2, $3, $4, $5)`
 
-	s.log.Printf("%s : query : %s ipresult.Create", traceId, newIP.IPAddress)
+	s.log.Printf("%s : query : %s ipresult.Create", traceID, newIP.IPAddress)
 
 	if _, err := s.db.ExecContext(ctx, q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCodes, ","); err != nil {
-		return IPResult{}, errors.Wrap(err, "inserting ipresult")
+		err = errors.Wrap(err, "inserting ipresult")
+		s.log.Printf("%s : error %v", traceID, err)
+		return IPResult{}, err
 	}
 
 	return ipRes, nil
 }
 
 // Update an existing row
-func (s Store) Update(ctx context.Context, traceId string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
-	ipRes, err := s.QueryByIP(ctx, traceId, ip)
+func (s Store) Update(ctx context.Context, traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
+	ipRes, err := s.QueryByIP(ctx, traceID, ip)
 	if err != nil {
 		return IPResult{}, err
 	}
@@ -65,18 +70,20 @@ func (s Store) Update(ctx context.Context, traceId string, ip string, uIP Update
 
 	const q = `UPDATE ip_results SET "updated_at" = $2,	"response_codes" = $3 WHERE ip_address = $1`
 
-	s.log.Printf("%s : query : %s ipresult.Update", traceId, ip)
+	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
 	if _, err := s.db.ExecContext(ctx, q, ip, ipRes.UpdatedAt, ipRes.ResponseCodes, ","); err != nil {
-		return IPResult{}, errors.Wrap(err, "updating ipresult")
+		err = errors.Wrap(err, "updating ipresult")
+		s.log.Printf("%s : error %v", traceID, err)
+		return IPResult{}, err
 	}
 
 	return ipRes, nil
 }
 
 // AddOrUpdate adds or, you guessed it, updates a row
-func (s Store) AddOrUpdate(ctx context.Context, traceId string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
-	ipRes, err := s.QueryByIP(ctx, traceId, ip)
+func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
+	ipRes, err := s.QueryByIP(ctx, traceID, ip)
 	if err != nil {
 		if errors.Cause(err) != ErrNotFound {
 			return IPResult{}, err
@@ -87,7 +94,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceId string, ip string, uIP U
 			ResponseCodes: uIP.ResponseCodes,
 		}
 
-		created, err := s.Create(ctx, traceId, nIP, now)
+		created, err := s.Create(ctx, traceID, nIP, now)
 		if err != nil {
 			return IPResult{}, err
 		}
@@ -100,17 +107,19 @@ func (s Store) AddOrUpdate(ctx context.Context, traceId string, ip string, uIP U
 
 	const q = `UPDATE ip_results SET "updated_at" = $1,	"response_codes" = $2 WHERE ip_address = $3`
 
-	s.log.Printf("%s : query : %s ipresult.Update", traceId, ip)
+	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
 	if _, err := s.db.ExecContext(ctx, q, ipRes.UpdatedAt, ipRes.ResponseCodes, ip, ","); err != nil {
-		return IPResult{}, errors.Wrap(err, "updating ipresult")
+		err = errors.Wrap(err, "updating ipresult")
+		s.log.Printf("%s : error %v", traceID, err)
+		return IPResult{}, err
 	}
 
 	return ipRes, nil
 }
 
-// QueryByIp finds a row by the ip address
-func (s Store) QueryByIP(ctx context.Context, traceId string, ip string) (IPResult, error) {
+// QueryByIP finds a row by the ip address
+func (s Store) QueryByIP(ctx context.Context, traceID string, ip string) (IPResult, error) {
 	// we're leveraging net.ParseIP to do our IP validation
 	addr := net.ParseIP(ip)
 	if addr == nil {
@@ -119,7 +128,7 @@ func (s Store) QueryByIP(ctx context.Context, traceId string, ip string) (IPResu
 
 	const q = `SELECT * FROM ip_results WHERE ip_address = $1`
 
-	s.log.Printf("%s : query : %s ipresult.QueryByIP", traceId, ip)
+	s.log.Printf("%s : query : %s ipresult.QueryByIP", traceID, ip)
 
 	var ipRes IPResult
 	if err := s.db.GetContext(ctx, &ipRes, q, addr.String()); err != nil {
@@ -127,7 +136,9 @@ func (s Store) QueryByIP(ctx context.Context, traceId string, ip string) (IPResu
 			return IPResult{}, ErrNotFound
 		}
 
-		return IPResult{}, errors.Wrapf(err, "selecting ip address %q", addr.String())
+		err = errors.Wrapf(err, "selecting ip address %q", addr.String())
+		s.log.Printf("%s : error %v", traceID, err)
+		return IPResult{}, err
 	}
 
 	return ipRes, nil

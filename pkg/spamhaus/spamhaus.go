@@ -9,9 +9,9 @@ import (
 
 const dnsZone = "zen.spamhaus.org"
 
-// QueryDNSBL queries the spamhaus dns blacklist and returns any codes found for a given ip. 
-// Because it is possible for an ip address to not be listed with spamhaus QueryDNSBL 
-// we do not treat an IsNotFound error as an error to be reported, we instead return nil 
+// QueryDNSBL queries the spamhaus dns blacklist and returns any codes found for a given ip.
+// Because it is possible for an ip address to not be listed with spamhaus QueryDNSBL
+// we do not treat an IsNotFound error as an error to be reported, we instead return nil
 // to indicate there were no codes found
 func QueryDNSBL(ip string) ([]string, error) {
 	// ParseIP returns nil in the case of an ivalid IP and a 16 byte slice in the case of a valid

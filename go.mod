@@ -11,5 +11,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/viper v1.7.1
+	// explicitly requiring v2.1.0, please see https://github.com/99designs/gqlgen/issues/1402 and https://stackoverflow.com/a/67187051/7571000
 	github.com/vektah/gqlparser/v2 v2.1.0
 )

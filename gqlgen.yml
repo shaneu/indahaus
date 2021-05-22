@@ -37,7 +37,7 @@ omit_slice_element_pointers: false
 autobind:
   - "github.com/shaneu/indahaus/graph/model"
 
-# DO NOT REMOVE
+######################### DO NOT REMOVE #################################
 # added so gqlgen would auto generate the UUID resolver
 struct_tag: gqlgen
 

@@ -19,7 +19,8 @@ import (
 	"github.com/shaneu/indahaus/pkg/auth"
 )
 
-func API(build string, shutdown chan os.Signal, a *auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
+// API binds our HTTP routes and applies our middleware and returns our http.Handler interface
+func API(build string, shutdown chan os.Signal, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 	e := echo.New()
 
 	// global middlewares to be applied to each request
@@ -40,7 +41,6 @@ func API(build string, shutdown chan os.Signal, a *auth.Auth, db *sqlx.DB, log *
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &gqlResolver}))
 
-	// handling error here because we have two ServeHTTP
 	srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
 		return errors.New("internal server error")
 	})
