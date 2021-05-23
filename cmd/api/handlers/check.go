@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/shaneu/indahaus/internal/mid"
 )
 
 type checkGroup struct {
@@ -14,6 +15,8 @@ type checkGroup struct {
 }
 
 func (cg checkGroup) readiness(c echo.Context) error {
+	v := c.Request().Context().Value(mid.RequestValueKey).(*mid.RequestValues)
+
 	status := "ok"
 	statusCode := http.StatusOK
 
@@ -21,6 +24,8 @@ func (cg checkGroup) readiness(c echo.Context) error {
 		status = "db not ready"
 		statusCode = http.StatusInternalServerError
 	}
+
+	v.StatusCode = statusCode
 
 	health := struct {
 		Status string `json:"status"`
@@ -32,6 +37,11 @@ func (cg checkGroup) readiness(c echo.Context) error {
 }
 
 func (cg checkGroup) liveness(c echo.Context) error {
+	v := c.Request().Context().Value(mid.RequestValueKey).(*mid.RequestValues)
+
+	statusCode := http.StatusOK
+	v.StatusCode = statusCode
+
 	host, err := os.Hostname()
 	if err != nil {
 		host = "unavailable"
@@ -55,5 +65,5 @@ func (cg checkGroup) liveness(c echo.Context) error {
 		Namespace: os.Getenv("KUBERNETES_NAMESPACE"),
 	}
 
-	return c.JSON(http.StatusOK, info)
+	return c.JSON(statusCode, info)
 }

@@ -77,6 +77,10 @@ update-api: indahaus
 	kind load docker-image indahaus-amd64:1.0 --name indahaus
 	kubectl delete pods -lapp.kubernetes.io/name=indahaus
 
+.PHONY: logs
+logs:
+	kubectl logs -l app.kubernetes.io/name=indahaus -f
+
 # forward the api port
 .PHONY: port-forward-api
 port-forward-api:

@@ -31,6 +31,21 @@ func API(build string, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 		middleware.Recover(),
 	)
 
+	customHTTPErrorHandler := func(err error, c echo.Context) {
+		v := c.Request().Context().Value(mid.RequestValueKey).(*mid.RequestValues)
+		log.Printf("%s : ERROR    : %v", v.TraceID, err)
+
+		msg := map[string]string{
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+
+		if !c.Response().Committed {
+			err = c.JSON(http.StatusInternalServerError, msg)
+			if err != nil {
+				log.Printf("%s : ERROR    : %v", v.TraceID, err)
+			}
+		}
+	}
 	// global http error handling
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
@@ -72,20 +87,4 @@ func API(build string, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 	e.GET("/liveness", checkGroup.liveness)
 
 	return e
-}
-
-func customHTTPErrorHandler(err error, c echo.Context) {
-	v := c.Request().Context().Value(mid.RequestValueKey).(*mid.RequestValues)
-	log.Printf("%s : ERROR    : %v", v.TraceID, err)
-
-	msg := map[string]string{
-		"message": http.StatusText(http.StatusInternalServerError),
-	}
-
-	if !c.Response().Committed {
-		err = c.JSON(http.StatusInternalServerError, msg)
-		if err != nil {
-			log.Printf("%s : ERROR    : %v", v.TraceID, err)
-		}
-	}
 }

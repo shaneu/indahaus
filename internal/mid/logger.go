@@ -19,10 +19,10 @@ func Logger(log *log.Logger) Middleware {
 
 			handler.ServeHTTP(w, r)
 
-			log.Printf("%s : completed  : %s %s -> %s (%s)",
+			log.Printf("%s : completed  : %s %s -> %s (%d) (%s)",
 				v.TraceID,
 				r.Method, r.URL.Path, r.RemoteAddr,
-				time.Since(v.Now),
+				v.StatusCode, time.Since(v.Now),
 			)
 		})
 	}

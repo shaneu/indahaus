@@ -85,11 +85,7 @@ tolerations: []
 affinity: {}
 
 db:
-  uri: file:indahaus.db?_busy_timeout=5000&_journal_mode=WAL
-  # DO NOT DO THIS IN PRODUCTION
-  # Values like this should be managed by a tool like hashicorp vault https://www.vaultproject.io/
-  username: sqlite3
-  password: sqlite3
+  uri: file:indahaus.db?_busy_timeout=5000
 
 auth:
   # DO NOT DO THIS IN PRODUCTION

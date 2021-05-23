@@ -55,16 +55,6 @@ spec:
               configMapKeyRef:
                 name: {{ include "helm.fullname" . }}-config
                 key: db-uri
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "helm.fullname" . }}-secret
-                key: db-password
-          - name: DB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "helm.fullname" . }}-secret
-                key: db-username
           - name: AUTH_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -86,12 +76,12 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /readiness
-              port: http
+              path: /liveness
+              port: {{ .Values.port }}
           readinessProbe:
             httpGet:
               path: /readiness
-              port: http
+              port: {{ .Values.port }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
