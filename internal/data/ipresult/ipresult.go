@@ -50,9 +50,7 @@ func (s Store) Create(ctx context.Context, traceID string, newIP NewIPResult, no
 	s.log.Printf("%s : query : %s ipresult.Create", traceID, newIP.IPAddress)
 
 	if _, err := s.db.ExecContext(ctx, q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCodes, ","); err != nil {
-		err = errors.Wrap(err, "inserting ipresult")
-		s.log.Printf("%s : error %v", traceID, err)
-		return IPResult{}, err
+		return IPResult{}, errors.Wrap(err, "inserting ipresult")
 	}
 
 	return ipRes, nil
@@ -73,9 +71,7 @@ func (s Store) Update(ctx context.Context, traceID string, ip string, uIP Update
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
 	if _, err := s.db.ExecContext(ctx, q, ip, ipRes.UpdatedAt, ipRes.ResponseCodes, ","); err != nil {
-		err = errors.Wrap(err, "updating ipresult")
-		s.log.Printf("%s : error %v", traceID, err)
-		return IPResult{}, err
+		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
 	return ipRes, nil
@@ -96,7 +92,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 
 		created, err := s.Create(ctx, traceID, nIP, now)
 		if err != nil {
-			return IPResult{}, err
+			return IPResult{}, errors.Wrap(err, "addOrUpdate")
 		}
 
 		return created, nil
@@ -110,9 +106,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
 	if _, err := s.db.ExecContext(ctx, q, ipRes.UpdatedAt, ipRes.ResponseCodes, ip, ","); err != nil {
-		err = errors.Wrap(err, "updating ipresult")
-		s.log.Printf("%s : error %v", traceID, err)
-		return IPResult{}, err
+		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
 	return ipRes, nil
@@ -136,9 +130,7 @@ func (s Store) QueryByIP(ctx context.Context, traceID string, ip string) (IPResu
 			return IPResult{}, ErrNotFound
 		}
 
-		err = errors.Wrapf(err, "selecting ip address %q", addr.String())
-		s.log.Printf("%s : error %v", traceID, err)
-		return IPResult{}, err
+		return IPResult{}, errors.Wrapf(err, "selecting ip address %q", addr.String())
 	}
 
 	return ipRes, nil

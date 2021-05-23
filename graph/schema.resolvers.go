@@ -13,7 +13,6 @@ import (
 	"github.com/shaneu/indahaus/graph/model"
 	"github.com/shaneu/indahaus/internal/data/ipresult"
 	"github.com/shaneu/indahaus/internal/mid"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.IPDetails, error) {
@@ -70,9 +69,9 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 		case res := <-resultChan:
 			// append the result and keep going
 			results = append(results, res)
-		case <-e:
+		case err := <-e:
 			// return the error to the caller, don't continue
-			return results, gqlerror.Errorf("error processing ip addresses")
+			return results, err
 		}
 
 		// if we've gotten here we have successfully processed one ip and we decrement our work counter
@@ -90,7 +89,7 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*model.IPD
 			return nil, nil
 		}
 
-		return nil, gqlerror.Errorf("error getting ip address")
+		return nil, err
 	}
 
 	response := model.IPDetails{
