@@ -31,9 +31,7 @@ func run(log *log.Logger) error {
 	// Initialize configuration
 	var cfg struct {
 		DB struct {
-			Uri      string
-			Username string
-			Password string
+			Uri string
 		}
 	}
 
@@ -58,9 +56,7 @@ func run(log *log.Logger) error {
 	switch os.Args[1] {
 	case "migrate":
 		dbCfg := database.Config{
-			Password: cfg.DB.Password,
-			Uri:      cfg.DB.Uri,
-			Username: cfg.DB.Username,
+			Uri: cfg.DB.Uri,
 		}
 		err := migrate(dbCfg)
 		if err != nil {

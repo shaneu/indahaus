@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/jmoiron/sqlx"
@@ -20,7 +19,7 @@ import (
 )
 
 // API binds our HTTP routes and applies our middleware and returns our http.Handler interface
-func API(build string, shutdown chan os.Signal, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
+func API(build string, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 	e := echo.New()
 
 	// global middlewares to be applied to each request

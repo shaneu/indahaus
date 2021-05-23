@@ -42,9 +42,7 @@ func run(log *log.Logger) error {
 		Port      string
 		DebugPort string
 		DB        struct {
-			Uri      string
-			Username string
-			Password string
+			Uri string
 		}
 		App struct {
 			ReadTimeout     time.Duration
@@ -83,9 +81,7 @@ func run(log *log.Logger) error {
 	// Initialize database
 	log.Println("main: Initializing database support")
 	db, err := database.Open(database.Config{
-		Password: cfg.DB.Password,
-		Uri:      cfg.DB.Uri,
-		Username: cfg.DB.Username,
+		Uri: cfg.DB.Uri,
 	})
 	if err != nil {
 		return errors.Wrap(err, "connecting to db")
@@ -94,10 +90,6 @@ func run(log *log.Logger) error {
 		log.Printf("main: Database Stopping")
 		db.Close()
 	}()
-
-	// ===========================================================
-	// Initialize auth
-	a := auth.New(cfg.Auth.Username, cfg.Auth.Password)
 
 	// ===========================================================
 	// Initialize debug endpoint
@@ -114,9 +106,13 @@ func run(log *log.Logger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
+	// ===========================================================
+	// Initialize auth
+	a := auth.New(cfg.Auth.Username, cfg.Auth.Password)
+
 	api := http.Server{
 		Addr:         net.JoinHostPort(cfg.Address, cfg.Port),
-		Handler:      handlers.API(build, shutdown, a, db, log),
+		Handler:      handlers.API(build, a, db, log),
 		ReadTimeout:  cfg.App.ReadTimeout,
 		WriteTimeout: cfg.App.WriteTimeout,
 	}

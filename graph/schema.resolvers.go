@@ -30,7 +30,7 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 	// other writes were successful, so they may try to enqueue the same ip addresses again, but no data will
 	// be corrupted by doing that and hopefully on the next attempt the user won't get an error.
 	resultChan := make(chan *model.IPDetails, len(ip))
-	e := make(chan error, 1)
+	e := make(chan error, len(ip))
 
 	for _, a := range ip {
 		// kick off a goroutine to process each ip concurrently
@@ -72,7 +72,7 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 			results = append(results, res)
 		case <-e:
 			// return the error to the caller, don't continue
-			return nil, gqlerror.Errorf("error processing ip addresses")
+			return results, gqlerror.Errorf("error processing ip addresses")
 		}
 
 		// if we've gotten here we have successfully processed one ip and we decrement our work counter

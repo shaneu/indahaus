@@ -18,7 +18,7 @@ migrate:
 
 .PHONY: resetdb
 resetdb:
-	rm test.db*
+	rm indahaus.db
 	go run cmd/admin/main.go migrate
 
 .PHONY: test

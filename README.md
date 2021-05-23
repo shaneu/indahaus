@@ -32,8 +32,7 @@ For building and running the docker container you'll need [docker](https://docs.
 
 For running in a local kubernetes cluster you can use my favorite, [kind](https://kind.sigs.k8s.io/), install instructions [here](https://kind.sigs.k8s.io/docs/user/quick-start/#installation).
 
-##### NOTE
-Not tested with minikube. I have scars and can't go back. I imagine it works?
+##### NOTE: not tested with minikube. I have scars and can't go back. I imagine it works?
 
 Then you'll need [kubectl](https://kubernetes.io/docs/tasks/tools/).
 
@@ -74,6 +73,11 @@ Download the dependencies:
 go mod download
 ```
 
+Migrate the db
+```bash
+make migrate
+```
+
 Build (or run) the binary:
 
 ```bash
@@ -82,10 +86,6 @@ make build
 make run
 ```
 
-Migrate the db
-```
-make migrate
-```
 
 and you're off the races.
 
@@ -156,6 +156,7 @@ The next layer is our business logic/data layer, in the `internal` dir. Packages
 Finally we have our application layer where our graphql and our rest endpoints live. The `cmd` dir is where our binaries live, our our case
 we have two, the main app and a thin admin app that does some useful things like migrating our database. Ideally the `graph` dir should be nested in
 `cmd/api` but gqlgen seems happier when it isn't.
+
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 
