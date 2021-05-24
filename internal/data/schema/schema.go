@@ -6,7 +6,7 @@ import (
 )
 
 const schema = `
-	CREATE TABLE ip_results (
+	CREATE TABLE IF NOT EXISTS ip_results (
 		ip_address TEXT PRIMARY KEY,
 		id TEXT UNIQUE,
 		created_at DATETIME,

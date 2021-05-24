@@ -3,16 +3,16 @@ FROM golang:alpine3.12 as builder
 ARG VCS_REF
 ARG DB_URI_PATH=file:indahaus.db?_busy_timeout=5000
 
-WORKDIR /service
+WORKDIR /golang
 COPY . .
 
 RUN apk add --no-cache sqlite gcc musl-dev
 
-WORKDIR /service/cmd/api
+WORKDIR /golang/cmd/api
 RUN go build -ldflags "-X main.build=${VCS_REF}" -o indahaus
 
 # TODO: come up with a better way to generate db file
-WORKDIR /service/cmd
+WORKDIR /golang/cmd
 RUN DB_URI="${DB_URI_PATH}" go run admin/main.go migrate
 
 FROM alpine:3.12
@@ -24,11 +24,12 @@ ARG PORT
 RUN addgroup -g 1000 golang && \
   adduser -u 1000 -G golang -s /bin/sh -D golang
 
-WORKDIR /service
+RUN mkdir /golang && chown golang:golang /golang
+WORKDIR /golang
 
 COPY --from=builder /usr/bin/sqlite3 /usr/bin/sqlite3
-COPY --from=builder --chown=golang:golang /service/cmd/indahaus.db ./
-COPY --from=builder --chown=golang:golang /service/cmd/api/indahaus ./
+COPY --from=builder --chown=golang:golang /golang/cmd/indahaus.db ./
+COPY --from=builder --chown=golang:golang /golang/cmd/api/indahaus ./
 COPY config.yaml ./
 
 ENV PORT="${PORT}"

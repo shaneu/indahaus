@@ -61,7 +61,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	Enqueue(ctx context.Context, ip []string) ([]*model.IPDetails, error)
+	Enqueue(ctx context.Context, ip []string) ([]string, error)
 }
 type QueryResolver interface {
 	GetIPDetails(ctx context.Context, ip string) (*model.IPDetails, error)
@@ -220,7 +220,7 @@ type Query {
 }
 
 type Mutation {
-  enqueue(ip: [String!]!): [IPDetails]!
+  enqueue(ip: [String!]!): [String!]!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -524,9 +524,9 @@ func (ec *executionContext) _Mutation_enqueue(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.IPDetails)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalNIPDetails2ᚕᚖgithubᚗcomᚋshaneuᚋindahausᚋgraphᚋmodelᚐIPDetails(ctx, field.Selections, res)
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getIPDetails(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2126,43 +2126,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNIPDetails2ᚕᚖgithubᚗcomᚋshaneuᚋindahausᚋgraphᚋmodelᚐIPDetails(ctx context.Context, sel ast.SelectionSet, v []*model.IPDetails) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOIPDetails2ᚖgithubᚗcomᚋshaneuᚋindahausᚋgraphᚋmodelᚐIPDetails(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

@@ -13,8 +13,8 @@ import (
 	"github.com/shaneu/indahaus/graph"
 	"github.com/shaneu/indahaus/graph/generated"
 	"github.com/shaneu/indahaus/internal/data/ipresult"
-	"github.com/shaneu/indahaus/internal/iplookup"
 	"github.com/shaneu/indahaus/internal/mid"
+	"github.com/shaneu/indahaus/internal/processips"
 	"github.com/shaneu/indahaus/pkg/auth"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -53,9 +53,10 @@ func API(build string, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 		return a.Authenticate(username, password), nil
 	})
 
+	ipResStore := ipresult.New(log, db)
 	gqlResolver := graph.Resolver{
-		IPResult: ipresult.New(log, db),
-		IPLookup: iplookup.New(log),
+		IPResultStore:  ipResStore,
+		ProcessIPStore: processips.New(log, ipResStore),
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &gqlResolver}))
 

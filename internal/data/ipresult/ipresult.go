@@ -1,7 +1,6 @@
 package ipresult
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"net"
@@ -31,7 +30,7 @@ func New(log *log.Logger, db *sqlx.DB) Store {
 }
 
 // Create inserts a new row into the db
-func (s Store) Create(ctx context.Context, traceID string, newIP NewIPResult, now time.Time) (IPResult, error) {
+func (s Store) Create(traceID string, newIP NewIPResult, now time.Time) (IPResult, error) {
 	ipRes := IPResult{
 		CreatedAt:     now.UTC(),
 		ID:            uuid.New().String(),
@@ -49,7 +48,7 @@ func (s Store) Create(ctx context.Context, traceID string, newIP NewIPResult, no
 
 	s.log.Printf("%s : query : %s ipresult.Create", traceID, newIP.IPAddress)
 
-	if _, err := s.db.ExecContext(ctx, q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCodes, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCodes, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "inserting ipresult")
 	}
 
@@ -57,8 +56,8 @@ func (s Store) Create(ctx context.Context, traceID string, newIP NewIPResult, no
 }
 
 // Update an existing row
-func (s Store) Update(ctx context.Context, traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
-	ipRes, err := s.QueryByIP(ctx, traceID, ip)
+func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
+	ipRes, err := s.QueryByIP(traceID, ip)
 	if err != nil {
 		return IPResult{}, err
 	}
@@ -70,7 +69,7 @@ func (s Store) Update(ctx context.Context, traceID string, ip string, uIP Update
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.ExecContext(ctx, q, ip, ipRes.UpdatedAt, ipRes.ResponseCodes, ","); err != nil {
+	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCodes, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
@@ -78,8 +77,8 @@ func (s Store) Update(ctx context.Context, traceID string, ip string, uIP Update
 }
 
 // AddOrUpdate adds or, you guessed it, updates a row
-func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
-	ipRes, err := s.QueryByIP(ctx, traceID, ip)
+func (s Store) AddOrUpdate(traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
+	ipRes, err := s.QueryByIP(traceID, ip)
 	if err != nil {
 		if errors.Cause(err) != ErrNotFound {
 			return IPResult{}, err
@@ -90,7 +89,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 			ResponseCodes: uIP.ResponseCodes,
 		}
 
-		created, err := s.Create(ctx, traceID, nIP, now)
+		created, err := s.Create(traceID, nIP, now)
 		if err != nil {
 			return IPResult{}, errors.Wrap(err, "addOrUpdate")
 		}
@@ -105,7 +104,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.ExecContext(ctx, q, ipRes.UpdatedAt, ipRes.ResponseCodes, ip, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCodes, ip, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
@@ -113,7 +112,7 @@ func (s Store) AddOrUpdate(ctx context.Context, traceID string, ip string, uIP U
 }
 
 // QueryByIP finds a row by the ip address
-func (s Store) QueryByIP(ctx context.Context, traceID string, ip string) (IPResult, error) {
+func (s Store) QueryByIP(traceID string, ip string) (IPResult, error) {
 	// we're leveraging net.ParseIP to do our IP validation
 	addr := net.ParseIP(ip)
 	if addr == nil {
@@ -125,7 +124,7 @@ func (s Store) QueryByIP(ctx context.Context, traceID string, ip string) (IPResu
 	s.log.Printf("%s : query : %s ipresult.QueryByIP", traceID, ip)
 
 	var ipRes IPResult
-	if err := s.db.GetContext(ctx, &ipRes, q, addr.String()); err != nil {
+	if err := s.db.Get(&ipRes, q, addr.String()); err != nil {
 		if err == sql.ErrNoRows {
 			return IPResult{}, ErrNotFound
 		}
