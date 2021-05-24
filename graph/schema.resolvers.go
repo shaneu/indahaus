@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/pkg/errors"
 	"github.com/shaneu/indahaus/graph/generated"
 	"github.com/shaneu/indahaus/graph/model"
@@ -20,23 +21,34 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 
 	var results []*model.IPDetails
 
+	work := len(ip)
+
 	// We use a buffered channel of len(ip) so in the event one of the child goroutines errors and we return
 	// from the parent goroutine we don't want the other children blocking trying to send to the resultChan
 	// which won't have a receiver anymore. With a buffered chan those writes won't block so the other children
 	// will be able to exit and we avoid leaking goroutines. It also gives us the added benefit of supporting
-	// partial failure - one goroutine might error but that doesn't mean the others won't succeed in the background.
-	// There is a tradeoff that the user will get an error from the graphql response and won't know that the
-	// other writes were successful, so they may try to enqueue the same ip addresses again, but no data will
-	// be corrupted by doing that and hopefully on the next attempt the user won't get an error.
-	resultChan := make(chan *model.IPDetails, len(ip))
-	e := make(chan error, len(ip))
+	// partial failure - one goroutine might error but that doesn't mean the others won't succeed
+	resultChan := make(chan *model.IPDetails, work)
+	failedIPErrs := make(chan error, work)
+
+	// limit the amount of concurrent process to avoid overwhelming resources in the event of a large number of ips
+	// to process. We make a channel of empty struct as the type of value is meaningless and struct{}{} doesn't allocate
+	// and can't be misinterpreted as having meaning beyond signaling. Starting with 100, we can adjust based on the
+	// performance/limits of the spamhaus api
+	sem := make(chan struct{}, 100)
 
 	for _, a := range ip {
 		// kick off a goroutine to process each ip concurrently
 		go func(ipAddr string) {
+			// push a value into the semaphore channel, once the channel reaches capacity the other goroutines
+			// will block on the send until completed goroutines remove a value from the channel
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
 			codes, err := r.IPLookup.LookupIPAddress(v.TraceID, ipAddr)
 			if err != nil {
-				e <- err
+				failedIPErrs <- errors.Wrap(err, ipAddr)
+				return
 			}
 
 			up := ipresult.UpdateIPResult{
@@ -45,7 +57,8 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 
 			res, err := r.IPResult.AddOrUpdate(ctx, v.TraceID, ipAddr, up, time.Now())
 			if err != nil {
-				e <- err
+				failedIPErrs <- errors.Wrap(err, ipAddr)
+				return
 			}
 
 			result := model.IPDetails{
@@ -60,18 +73,15 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 		}(a)
 	}
 
-	work := len(ip)
-
 	for work > 0 {
-		// while there are still IP addresses to be processed we use a blocking select statement to get either
-		// a result or an error
+		// using a blocking select to get a result or a failed ip address
 		select {
 		case res := <-resultChan:
 			// append the result and keep going
 			results = append(results, res)
-		case err := <-e:
-			// return the error to the caller, don't continue
-			return results, err
+		case err := <-failedIPErrs:
+			// add the failed ip address error to the `errors` key of the gql response
+			graphql.AddError(ctx, err)
 		}
 
 		// if we've gotten here we have successfully processed one ip and we decrement our work counter

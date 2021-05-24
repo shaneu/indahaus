@@ -32,8 +32,8 @@ generate:
 
 # ===================================================================
 # docker build
-.PHONY: indahaus
-indahaus:
+.PHONY: docker-build
+docker-build:
 	docker build --progress=plain \
 		-f config/Dockerfile \
 		-t indahaus-amd64:1.0 \
@@ -41,6 +41,10 @@ indahaus:
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%d%H:%M:%SZ"` \
 		--build-arg PORT=8080 \
 		.
+
+.PHONY: docker-run
+docker-run:
+	docker run --rm -p 8080:8080 indahaus-amd64:1.0
 
 # ===================================================================
 # k8s dev
@@ -62,7 +66,7 @@ helm-down:
 	helm delete api
 
 # bring up the full application for dev
-up: indahaus kind-up kind-load helm-up
+up: docker-build kind-up kind-load helm-up
 
 # tear down the full application including the kind cluster
 down: helm-down kind-down
@@ -73,7 +77,7 @@ cluster-info:
 	kubectl get pods --watch
 
 # rebuild the image, load it into kind and delete the old pod so k8s will restart with code updates
-update-api: indahaus
+update-api: docker-build
 	kind load docker-image indahaus-amd64:1.0 --name indahaus
 	kubectl delete pods -lapp.kubernetes.io/name=indahaus
 
