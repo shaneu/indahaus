@@ -38,11 +38,19 @@ Then you'll need [kubectl](https://kubernetes.io/docs/tasks/tools/).
 
 Finally you'll need [helm](https://helm.sh/docs/intro/install/), whew, got all that?
 
-To run:
+To run locally:
 ```bash
 make migrate
 make run
 ```
+
+To create and run a docker container:
+```bash
+make docker-build
+make docker-run
+```
+
+For k8s instructions see below.
 
 There are some other handy command to aid in local dev, like 
 
@@ -165,10 +173,10 @@ we have two, the main app and a thin admin app that does some useful things like
 parameters and override them with env vars
 - [go-sqlite3](https://github.com/mattn/go-sqlite3) - The only sqlite driver that is included in and has passed the go driver compatibility test suite [doc](https://github.com/golang/go/wiki/SQLDrivers)
 - [sqlx](https://github.com/jmoiron/sqlx) - provides some nice extensions beyond what is delivered by the built in sql library while still being fully interface compliant. Will be useful if we decide to change from sqlite to something like postgres
-- [echo](github.com/labstack/echo) - A minimalist web framework we're using for it's routing and its auth and panic recover middlewares 
-- [uuid](github.com/google/uuid) - Generates our trace IDs and db IDs
-- [gqlgen](github.com/99designs/gqlgen) - Takes a lot of the boiler plate out of creating a graphql api all while providing a high level of type safety
-- [go-cmp](github.com/google/go-cmp) - For doing easy comparisons between fields in our tests
+- [echo](https://github.com/labstack/echo) - A minimalist web framework we're using for it's routing and its auth and panic recover middlewares 
+- [uuid](https://github.com/google/uuid) - Generates our trace IDs and db IDs
+- [gqlgen](https://github.com/99designs/gqlgen) - Takes a lot of the boiler plate out of creating a graphql api all while providing a high level of type safety
+- [go-cmp](https://github.com/google/go-cmp) - For doing easy comparisons between fields in our tests
 
 ## ✍️ TODO <a name = "todo"></a>
 
