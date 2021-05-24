@@ -1,7 +1,6 @@
 package ipresult_test
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,11 +28,15 @@ func setup(t *testing.T) (*log.Logger, *sqlx.DB, func()) {
 	}
 
 	cfg := database.Config{
-		Username: "sqlite",
-		Password: "sqlite",
-		Uri:      fmt.Sprintf("file:%s", tempFile.Name()),
+		Uri: fmt.Sprintf("file:%s", tempFile.Name()),
 	}
 
+	// We're testing with an actual database here as opposed to mocking. I've seen more bugs than
+	// I can name (some of them my own) when a mocking implementation makes some assumption that doesn't
+	// bear out in the real world, or proves to be brittle when it comes to changing implementation details.
+	// Testing with the real thing gives us piece of mind that if our code passes the tests there's
+	// a higher likelyhood it will perform the same in production. Were this a database like postgres,
+	// mongodb, or mysql I'd spin up a container per test either by hand or using a lib like https://github.com/ory/dockertest
 	db, err := database.Open(cfg)
 	if err != nil {
 		t.Fatalf("opening database connection: %v", err)
@@ -56,6 +59,7 @@ func setup(t *testing.T) (*log.Logger, *sqlx.DB, func()) {
 
 	return log, db, teardown
 }
+
 func TestIPResult(t *testing.T) {
 	log, db, teardown := setup(t)
 	t.Cleanup(teardown)
@@ -70,7 +74,6 @@ func TestIPResult(t *testing.T) {
 	t.Logf("\tTest %d:\tWhen inserting an IP result.", testID)
 	// ============================================================================
 	// Create an ip result
-	ctx := context.Background()
 	now := time.Date(2018, time.October, 1, 0, 0, 0, 0, time.UTC)
 	traceID := "00000000-0000-0000-0000-000000000000"
 
@@ -79,7 +82,7 @@ func TestIPResult(t *testing.T) {
 		ResponseCodes: "127.0.0.2,127.0.0.4",
 	}
 
-	ipRes, err := s.Create(ctx, traceID, newIP, now)
+	ipRes, err := s.Create(traceID, newIP, now)
 	if err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to create IP result : %s.", failure, testID, err)
 	}
@@ -87,7 +90,7 @@ func TestIPResult(t *testing.T) {
 
 	// ============================================================================
 	// Query by IP address
-	saved, err := s.QueryByIP(ctx, traceID, ipRes.IPAddress)
+	saved, err := s.QueryByIP(traceID, ipRes.IPAddress)
 	if err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to retrieve result by IP: %s.", failure, testID, err)
 	}
@@ -104,7 +107,7 @@ func TestIPResult(t *testing.T) {
 
 	// ============================================================================
 	// Update IP result
-	if _, err := s.Update(ctx, traceID, ipRes.IPAddress, upd, now); err != nil {
+	if _, err := s.Update(traceID, ipRes.IPAddress, upd, now); err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to update IP result : %s.", failure, testID, err)
 	}
 	t.Logf("\t%s\tTest %d:\tShould be able to update IP result.", success, testID)
@@ -116,7 +119,7 @@ func TestIPResult(t *testing.T) {
 	}
 	newIPAddr := "18.205.180.52"
 
-	if _, err := s.AddOrUpdate(ctx, traceID, newIPAddr, upd, now); err != nil {
+	if _, err := s.AddOrUpdate(traceID, newIPAddr, upd, now); err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
 	}
 	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
@@ -127,12 +130,12 @@ func TestIPResult(t *testing.T) {
 
 	// ============================================================================
 	// AddOrUpdate  (Update)
-	if _, err := s.AddOrUpdate(ctx, traceID, ipRes.IPAddress, upd, now); err != nil {
+	if _, err := s.AddOrUpdate(traceID, ipRes.IPAddress, upd, now); err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
 	}
 	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
 
-	saved, err = s.QueryByIP(ctx, traceID, ipRes.IPAddress)
+	saved, err = s.QueryByIP(traceID, ipRes.IPAddress)
 	if err != nil {
 		t.Fatalf("unable to retrieve store result %v", err)
 	}

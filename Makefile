@@ -44,7 +44,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run:
-	docker run --rm -p 8080:8080 indahaus-amd64:1.0
+	docker run --rm -p 8080:8080 -e AUTH_PASSWORD=supersecret -e AUTH_USERNAME=secureworks indahaus-amd64:1.0
 
 # ===================================================================
 # k8s dev

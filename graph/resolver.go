@@ -2,7 +2,7 @@ package graph
 
 import (
 	"github.com/shaneu/indahaus/internal/data/ipresult"
-	"github.com/shaneu/indahaus/internal/iplookup"
+	"github.com/shaneu/indahaus/internal/processips"
 )
 
 //go:generate go run github.com/99designs/gqlgen
@@ -12,6 +12,6 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	IPResult ipresult.Store
-	IPLookup iplookup.Store
+	IPResultStore  ipresult.Store
+	ProcessIPStore processips.Store
 }
