@@ -174,10 +174,7 @@ parameters and override them with env vars
 
 - Integration tests: go has amazing built in support for running integration tests using the httptest package
 - Install a migration framework to allow us to update, and roll back, or database schema
-- Improved error handling: right now we're returning a rather generic error to the user. This is good in the sense
-that we aren't leaking anything sensitive, not the best for user experience. We could improve this by adding a set of
-trusted errors to be able to return to the client without giving away system details
-
+- Improved error handling: We should create a subset of trusted errors or a custom error to respond to the user with without leaking too much information about our system
 ## ✍️ Author <a name = "author"></a>
 
 [@shaneu](https://github.com/shaneu)

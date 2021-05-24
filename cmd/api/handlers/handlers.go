@@ -70,7 +70,7 @@ func API(build string, a auth.Auth, db *sqlx.DB, log *log.Logger) http.Handler {
 
 		log.Printf("%s : ERROR    : %v", v.TraceID, err)
 
-		return gqlerror.Errorf("graphql error")
+		return gqlerror.Errorf("graphql error %s", err.Error())
 	})
 
 	gqlGrp := graphqlGroup{
