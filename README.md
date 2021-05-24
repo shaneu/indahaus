@@ -14,6 +14,7 @@
 - [Usage](#usage)
 - [Built Using](#built_using)
 - [TODO](#todo)
+- [Regrets](#regrets)
 - [Author](#author)
 - [Acknowledgments](#acknowledgement)
 
@@ -180,9 +181,24 @@ parameters and override them with env vars
 
 ## ✍️ TODO <a name = "todo"></a>
 
+- Add support for tracing and metrics collection.
 - Integration tests: go has amazing built in support for running integration tests using the httptest package
 - Install a migration framework to allow us to update, and roll back, or database schema
 - Improved error handling: We should create a subset of trusted errors or a custom error to respond to the user with without leaking too much information about our system
+
+
+## ✍️ Regrets <a name = "regrets"></a>
+
+These are things I would have liked to have done/been able to do differently.
+
+Right now requests are being handled by 2 different ServeHTTP methods - the echo framework and the gqlgen framework.
+This means that my centralized error handling/reporting is split into two - I have to have one for the graphql requests and one for
+the three REST routes. Now, the argument could be made that those 3 REST routes, /liveness, /readiness, and /debug/vars are not the business
+deliverable here and so elegant error handling and the like isn't critical, and I could easily be persuaded. What if tomorrow though a client
+comes and says I will give you 1 billion dollars if you write a rest endpoint for this service that I can use because Acme Corp doesn't 
+use graphql? I mean, a billion dollars, that's a lotta green. I dug through the gqlgen source quite a bit and they don't expose a way to 
+have it simply manage the graphql query execution and let the consumer choose the transport, which would have been nice.
+
 ## ✍️ Author <a name = "author"></a>
 
 [@shaneu](https://github.com/shaneu)
