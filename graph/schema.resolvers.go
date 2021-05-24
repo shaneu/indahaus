@@ -23,11 +23,10 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*model.I
 
 	work := len(ip)
 
-	// We use a buffered channel of len(ip) so in the event one of the child goroutines errors and we return
-	// from the parent goroutine we don't want the other children blocking trying to send to the resultChan
-	// which won't have a receiver anymore. With a buffered chan those writes won't block so the other children
-	// will be able to exit and we avoid leaking goroutines. It also gives us the added benefit of supporting
-	// partial failure - one goroutine might error but that doesn't mean the others won't succeed
+	// we're using a buffered channel meaning that writes will not block, thus allowing us to better leverage
+	// concurrency in making our requests and persisting the data. We reduce the latency of the send receive
+	// as we don't have to wait for the guarantee the data was received but there will be latenency on the
+	// send as multiple goroutines trying to send at the same time will have to wait for their writes to be synchronized
 	resultChan := make(chan *model.IPDetails, work)
 	failedIPErrs := make(chan error, work)
 
