@@ -65,11 +65,11 @@ func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Ti
 	ipRes.UpdatedAt = now.UTC()
 	ipRes.ResponseCode = uIP.ResponseCode
 
-	const q = `UPDATE ip_results SET "updated_at" = $2, "response_code" = $3 WHERE ip_address = $1`
+	const q = `UPDATE ip_results SET "updated_at" = $1, "response_code" = $2 WHERE ip_address = $3`
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCode); err != nil {
+	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCode, ip); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
