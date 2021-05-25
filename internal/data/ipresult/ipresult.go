@@ -48,7 +48,7 @@ func (s Store) Create(traceID string, newIP NewIPResult, now time.Time) (IPResul
 
 	s.log.Printf("%s : query : %s ipresult.Create", traceID, newIP.IPAddress)
 
-	if _, err := s.db.Exec(q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCode, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCode); err != nil {
 		return IPResult{}, errors.Wrap(err, "inserting ipresult")
 	}
 
@@ -69,7 +69,7 @@ func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Ti
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCode, ","); err != nil {
+	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCode); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
@@ -104,7 +104,7 @@ func (s Store) AddOrUpdate(traceID string, ip string, uIP UpdateIPResult, now ti
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCode, ip, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCode, ip); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
