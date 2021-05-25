@@ -27,13 +27,12 @@ func New(log *log.Logger, dataStore ipresult.Store) Store {
 	}
 }
 
+// IsValid checks if an IP address is valid or not
 func (Store) IsValid(ip string) bool {
 	r := net.ParseIP(ip)
-	if r == nil {
-		return false
-	}
 
-	return true
+	// if the result is not nil we have a valid ip
+	return r != nil
 }
 
 // ProcessIPs takes the list of IP address and for each queries the spamhouse API and stores the results

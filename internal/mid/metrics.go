@@ -22,9 +22,9 @@ func Metrics() Middleware {
 			// increment the request counter
 			m.req.Add(1)
 
-			// every 100 requests get the number of goroutines, calling runtime.NumGoroutine isn't
+			// every 25 requests get the number of goroutines, calling runtime.NumGoroutine isn't
 			// free so we avoid doing it on each request
-			if m.req.Value()%100 == 0 {
+			if m.req.Value()%25 == 0 {
 				m.gr.Set(int64(runtime.NumGoroutine()))
 			}
 

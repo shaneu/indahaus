@@ -9,9 +9,7 @@ type IPResult struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	ID        string    `db:"id" json:"id"`
 	IPAddress string    `db:"ip_address" json:"ip_address"`
-	// An IP address can have multiple response codes. For now we are simply storing the codes as a
-	// comma separated list. This allows the user to see all associated codes for a given ip. Another
-	// alternative would be to have a codes table that a result would map to based on a foreign key relationship
+	// Storing response code as a pointer to represent nil when an IP address has zero codes
 	ResponseCode *string   `db:"response_code" json:"response_code"`
 	UpdatedAt    time.Time `db:"updated_at" json:"updated_at"`
 }
