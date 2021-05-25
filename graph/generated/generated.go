@@ -44,11 +44,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	IPDetails struct {
-		CreatedAt     func(childComplexity int) int
-		IPAddress     func(childComplexity int) int
-		ResponseCodes func(childComplexity int) int
-		UUID          func(childComplexity int) int
-		UpdatedAt     func(childComplexity int) int
+		CreatedAt    func(childComplexity int) int
+		IPAddress    func(childComplexity int) int
+		ResponseCode func(childComplexity int) int
+		UUID         func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -96,12 +96,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.IPDetails.IPAddress(childComplexity), true
 
-	case "IPDetails.response_codes":
-		if e.complexity.IPDetails.ResponseCodes == nil {
+	case "IPDetails.response_code":
+		if e.complexity.IPDetails.ResponseCode == nil {
 			break
 		}
 
-		return e.complexity.IPDetails.ResponseCodes(childComplexity), true
+		return e.complexity.IPDetails.ResponseCode(childComplexity), true
 
 	case "IPDetails.uuid":
 		if e.complexity.IPDetails.UUID == nil {
@@ -211,7 +211,7 @@ type IPDetails {
   uuid: ID!
   created_at: Time!
   updated_at: Time!
-  response_codes: String!
+  response_code: String!
   ip_address: String!
 }
 
@@ -417,7 +417,7 @@ func (ec *executionContext) _IPDetails_updated_at(ctx context.Context, field gra
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _IPDetails_response_codes(ctx context.Context, field graphql.CollectedField, obj *model.IPDetails) (ret graphql.Marshaler) {
+func (ec *executionContext) _IPDetails_response_code(ctx context.Context, field graphql.CollectedField, obj *model.IPDetails) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -435,7 +435,7 @@ func (ec *executionContext) _IPDetails_response_codes(ctx context.Context, field
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ResponseCodes, nil
+		return obj.ResponseCode, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1760,8 +1760,8 @@ func (ec *executionContext) _IPDetails(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "response_codes":
-			out.Values[i] = ec._IPDetails_response_codes(ctx, field, obj)
+		case "response_code":
+			out.Values[i] = ec._IPDetails_response_code(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

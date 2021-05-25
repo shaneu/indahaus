@@ -2,12 +2,18 @@ package processips
 
 import (
 	"log"
+	"net"
 	"strings"
 	"time"
 
 	"github.com/shaneu/indahaus/internal/data/ipresult"
 	"github.com/shaneu/indahaus/pkg/spamhaus"
 )
+
+// the 127.255.255.0/24 network representing errors, see see https://www.spamhaus.org/faq/section/DNSBL%20Usage#200
+var errIP = []byte("127.255.255.0")
+var errIPMask = []byte("255.255.255.0")
+var spamhausErrIPNet = net.IPNet{IP: errIP, Mask: errIPMask}
 
 type Store struct {
 	log       *log.Logger
@@ -19,6 +25,15 @@ func New(log *log.Logger, dataStore ipresult.Store) Store {
 		log:       log,
 		dataStore: dataStore,
 	}
+}
+
+func (Store) IsValid(ip string) bool {
+	r := net.ParseIP(ip)
+	if r == nil {
+		return false
+	}
+
+	return true
 }
 
 // ProcessIPs takes the list of IP address and for each queries the spamhouse API and stores the results
@@ -44,8 +59,18 @@ func (s Store) ProcessIPs(ips []string, traceID string) {
 				return
 			}
 
+			for _, code := range codes {
+				// we check if the code returned is in the `127.255.255.0/24` IP network indicating a request error
+				if spamhausErrIPNet.Contains(net.ParseIP(code)) {
+					s.log.Printf("%s : ERROR    : spamhaus for %s %s", traceID, ipAddr, code)
+					return
+				}
+			}
+
 			up := ipresult.UpdateIPResult{
-				ResponseCodes: strings.Join(codes, ","),
+				// we are concatenating multiple response codes into a single string. We may descide to store response codes
+				// in a separate table in the future based on a FK relationship but for simplicities sake we are storing as a single string
+				ResponseCode: strings.Join(codes, ","),
 			}
 
 			_, err = s.dataStore.AddOrUpdate(traceID, ipAddr, up, time.Now())

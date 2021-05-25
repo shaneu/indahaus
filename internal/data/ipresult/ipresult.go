@@ -32,23 +32,23 @@ func New(log *log.Logger, db *sqlx.DB) Store {
 // Create inserts a new row into the db
 func (s Store) Create(traceID string, newIP NewIPResult, now time.Time) (IPResult, error) {
 	ipRes := IPResult{
-		CreatedAt:     now.UTC(),
-		ID:            uuid.New().String(),
-		IPAddress:     newIP.IPAddress,
-		ResponseCodes: newIP.ResponseCodes,
-		UpdatedAt:     now.UTC(),
+		CreatedAt:    now.UTC(),
+		ID:           uuid.New().String(),
+		IPAddress:    newIP.IPAddress,
+		ResponseCode: newIP.ResponseCode,
+		UpdatedAt:    now.UTC(),
 	}
 
 	// we're writing our sql statements by hand rather than leverage some abstraction like an ORM. At this
 	// point in the projects lifecycle it will aid debugging and maintanice to not prematurely reach for an abstraction
 	// even if it means we write a little more code by hand
 	const q = `INSERT INTO ip_results
-		(id, created_at, updated_at, ip_address, response_codes)	
+		(id, created_at, updated_at, ip_address, response_code)	
 		VALUES ($1, $2, $3, $4, $5)`
 
 	s.log.Printf("%s : query : %s ipresult.Create", traceID, newIP.IPAddress)
 
-	if _, err := s.db.Exec(q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCodes, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.ID, ipRes.CreatedAt, ipRes.UpdatedAt, ipRes.IPAddress, ipRes.ResponseCode, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "inserting ipresult")
 	}
 
@@ -63,13 +63,13 @@ func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Ti
 	}
 
 	ipRes.UpdatedAt = now.UTC()
-	ipRes.ResponseCodes = uIP.ResponseCodes
+	ipRes.ResponseCode = uIP.ResponseCode
 
-	const q = `UPDATE ip_results SET "updated_at" = $2,	"response_codes" = $3 WHERE ip_address = $1`
+	const q = `UPDATE ip_results SET "updated_at" = $2,	"response_code" = $3 WHERE ip_address = $1`
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCodes, ","); err != nil {
+	if _, err := s.db.Exec(q, ip, ipRes.UpdatedAt, ipRes.ResponseCode, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 
@@ -85,8 +85,8 @@ func (s Store) AddOrUpdate(traceID string, ip string, uIP UpdateIPResult, now ti
 		}
 
 		nIP := NewIPResult{
-			IPAddress:     ip,
-			ResponseCodes: uIP.ResponseCodes,
+			IPAddress:    ip,
+			ResponseCode: uIP.ResponseCode,
 		}
 
 		created, err := s.Create(traceID, nIP, now)
@@ -98,13 +98,13 @@ func (s Store) AddOrUpdate(traceID string, ip string, uIP UpdateIPResult, now ti
 	}
 
 	ipRes.UpdatedAt = now.UTC()
-	ipRes.ResponseCodes = uIP.ResponseCodes
+	ipRes.ResponseCode = uIP.ResponseCode
 
-	const q = `UPDATE ip_results SET "updated_at" = $1, "response_codes" = $2 WHERE ip_address = $3`
+	const q = `UPDATE ip_results SET "updated_at" = $1, "response_code" = $2 WHERE ip_address = $3`
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
-	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCodes, ip, ","); err != nil {
+	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCode, ip, ","); err != nil {
 		return IPResult{}, errors.Wrap(err, "updating ipresult")
 	}
 

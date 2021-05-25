@@ -78,8 +78,8 @@ func TestIPResult(t *testing.T) {
 	traceID := "00000000-0000-0000-0000-000000000000"
 
 	newIP := ipresult.NewIPResult{
-		IPAddress:     "199.83.128.60",
-		ResponseCodes: "127.0.0.2,127.0.0.4",
+		IPAddress:    "199.83.128.60",
+		ResponseCode: "127.0.0.2,127.0.0.4",
 	}
 
 	ipRes, err := s.Create(traceID, newIP, now)
@@ -94,7 +94,7 @@ func TestIPResult(t *testing.T) {
 	if err != nil {
 		t.Fatalf("\t%s\tTest %d:\tShould be able to retrieve result by IP: %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to retrieve user by IP.", success, testID)
+	t.Logf("\t%s\tTest %d:\tShould be able to retrieve record by IP.", success, testID)
 
 	if diff := cmp.Diff(ipRes, saved); diff != "" {
 		t.Fatalf("\t%s\tTest %d:\tShould get back the same IP result. Diff:\n %s.", failure, testID, diff)
@@ -102,7 +102,7 @@ func TestIPResult(t *testing.T) {
 	t.Logf("\t%s\tTest %d:\tShould get back the same IP result.", success, testID)
 
 	upd := ipresult.UpdateIPResult{
-		ResponseCodes: "127.0.0.4",
+		ResponseCode: "127.0.0.4",
 	}
 
 	// ============================================================================
@@ -115,7 +115,7 @@ func TestIPResult(t *testing.T) {
 	// ============================================================================
 	// AddOrUpdate (Add)
 	upd = ipresult.UpdateIPResult{
-		ResponseCodes: "127.0.0.6",
+		ResponseCode: "127.0.0.6",
 	}
 	newIPAddr := "18.205.180.52"
 
@@ -125,7 +125,7 @@ func TestIPResult(t *testing.T) {
 	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
 
 	upd = ipresult.UpdateIPResult{
-		ResponseCodes: "127.0.1.0",
+		ResponseCode: "127.0.1.0",
 	}
 
 	// ============================================================================
@@ -140,7 +140,7 @@ func TestIPResult(t *testing.T) {
 		t.Fatalf("unable to retrieve store result %v", err)
 	}
 
-	if diff := cmp.Diff(saved.ResponseCodes, upd.ResponseCodes); diff != "" {
+	if diff := cmp.Diff(saved.ResponseCode, upd.ResponseCode); diff != "" {
 		t.Fatalf("\t%s\tTest %d:\tShould get back the updated response codes. Diff:\n %s.", failure, testID, diff)
 	}
 	t.Logf("\t%s\tTest %d:\tShould get back the updated response codes.", success, testID)

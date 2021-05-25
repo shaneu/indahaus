@@ -5,9 +5,9 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
-
 	"github.com/shaneu/indahaus/graph/generated"
 	"github.com/shaneu/indahaus/graph/model"
 	"github.com/shaneu/indahaus/internal/data/ipresult"
@@ -16,6 +16,12 @@ import (
 
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]string, error) {
 	v := ctx.Value(mid.RequestValueKey).(*mid.RequestValues)
+
+	for _, a := range ip {
+		if !r.ProcessIPStore.IsValid(a) {
+			return nil, fmt.Errorf("invalid ip : %s", a)
+		}
+	}
 
 	// Fire and forget ProcessIPs to let it run in the background
 	go r.ProcessIPStore.ProcessIPs(ip, v.TraceID)
@@ -35,11 +41,11 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*model.IPD
 	}
 
 	response := model.IPDetails{
-		CreatedAt:     result.CreatedAt,
-		UUID:          result.ID,
-		IPAddress:     result.IPAddress,
-		ResponseCodes: result.ResponseCodes,
-		UpdatedAt:     result.UpdatedAt,
+		CreatedAt:    result.CreatedAt,
+		UUID:         result.ID,
+		IPAddress:    result.IPAddress,
+		ResponseCode: result.ResponseCode,
+		UpdatedAt:    result.UpdatedAt,
 	}
 
 	return &response, nil

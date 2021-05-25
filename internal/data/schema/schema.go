@@ -11,7 +11,7 @@ const schema = `
 		id TEXT UNIQUE,
 		created_at DATETIME,
 		updated_at DATETIME,
-		response_codes TEXT
+		response_code TEXT
 	)
 `
 
