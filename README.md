@@ -114,14 +114,14 @@ API: 2021/05/22 16:02:02.985979 main.go:127: main: Api listening on :8080
 ## 💾 A Note About The Data <a name = "data"></a>
 
 A single IP address can have multiple results, for example the IP 103.35.191.44 has three results, 127.0.0.3, 127.0.0.4, 127.0.0.2.
-I have decided to store all three as a comma separated list so the user can see any codes that may apply to the IP address they enqueued.
+I have decided to store all three as a comma separated string so the user can see any codes that may apply to the IP address they enqueued.
 Conversely, when an address has no codes the user will receive `null`. 
 
 Codes that represent an error from the spamhaus API, their equivalent of a 400, will not be stored. In other words, if the code received is 127.255.255.255 
-meaning an excessive number of queries, that information is useful to us as the developers, but not the user so those codes won't be stored.
+meaning an excessive number of queries, that information is useful to us as the developers, but not the user.
 
 A possible future state of the app would be to have the response_code field return a slice of items that might contain the code and a
-human readable message.
+human readable message. We could have a table of response codes with a FK relationship.
 
 ## 🔧 Running in k8s locally <a name = "k8s"></a>
 
@@ -199,8 +199,8 @@ parameters and override them with env vars
 
 - Add support for tracing and metrics collection.
 - Integration tests: go has amazing built in support for running integration tests using the httptest package
-- Install a migration framework to allow us to update, and roll back, or database schema
-- Improved error handling: We should create a subset of trusted errors or a custom error to respond to the user with without leaking too much information about our system
+- Install a migration framework to allow us to update and roll back or database schema
+- Improved error handling: We should create a subset of trusted errors or a custom error to respond to the user with without leaking information about our system
 
 
 ## 😩 Regrets <a name = "regrets"></a>
