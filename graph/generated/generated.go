@@ -211,7 +211,10 @@ type IPDetails {
   uuid: ID!
   created_at: Time!
   updated_at: Time!
-  response_code: String!
+  """
+  response_code is a comma separated list of spamhaus codes, ex "127.0.0.4,127.0.0.2,127.0.0.3"
+  """
+  response_code: String
   ip_address: String!
 }
 
@@ -442,14 +445,11 @@ func (ec *executionContext) _IPDetails_response_code(ctx context.Context, field 
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _IPDetails_ip_address(ctx context.Context, field graphql.CollectedField, obj *model.IPDetails) (ret graphql.Marshaler) {
@@ -1762,9 +1762,6 @@ func (ec *executionContext) _IPDetails(ctx context.Context, sel ast.SelectionSet
 			}
 		case "response_code":
 			out.Values[i] = ec._IPDetails_response_code(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "ip_address":
 			out.Values[i] = ec._IPDetails_ip_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

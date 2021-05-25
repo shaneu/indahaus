@@ -7,7 +7,7 @@ type IPDetails {
   """
   response_code is a comma separated list of spamhaus codes, ex "127.0.0.4,127.0.0.2,127.0.0.3"
   """
-  response_code: String!
+  response_code: String
   ip_address: String!
 }
 

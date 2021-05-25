@@ -37,15 +37,20 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*model.IPD
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, errors.New("unable to retrive details")
 	}
 
 	response := model.IPDetails{
 		CreatedAt:    result.CreatedAt,
 		UUID:         result.ID,
 		IPAddress:    result.IPAddress,
-		ResponseCode: result.ResponseCode,
 		UpdatedAt:    result.UpdatedAt,
+		ResponseCode: &result.ResponseCode,
+	}
+
+	// The user should get null in the event of no response codes
+	if result.ResponseCode == "" {
+		response.ResponseCode = nil
 	}
 
 	return &response, nil
