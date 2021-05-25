@@ -55,27 +55,6 @@ func (s Store) Create(traceID string, newIP NewIPResult, now time.Time) (IPResul
 	return ipRes, nil
 }
 
-// Update an existing row
-func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
-	ipRes, err := s.QueryByIP(traceID, ip)
-	if err != nil {
-		return IPResult{}, err
-	}
-
-	ipRes.UpdatedAt = now.UTC()
-	ipRes.ResponseCode = uIP.ResponseCode
-
-	const q = `UPDATE ip_results SET "updated_at" = $1, "response_code" = $2 WHERE ip_address = $3`
-
-	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
-
-	if _, err := s.db.Exec(q, ipRes.UpdatedAt, ipRes.ResponseCode, ip); err != nil {
-		return IPResult{}, errors.Wrap(err, "updating ipresult")
-	}
-
-	return ipRes, nil
-}
-
 // AddOrUpdate adds or, you guessed it, updates a row
 func (s Store) AddOrUpdate(traceID string, ip string, uIP UpdateIPResult, now time.Time) (IPResult, error) {
 	ipRes, err := s.QueryByIP(traceID, ip)
