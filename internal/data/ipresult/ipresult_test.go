@@ -77,9 +77,10 @@ func TestIPResult(t *testing.T) {
 	now := time.Date(2018, time.October, 1, 0, 0, 0, 0, time.UTC)
 	traceID := "00000000-0000-0000-0000-000000000000"
 
+	codes := "127.0.0.2,127.0.0.4"
 	newIP := ipresult.NewIPResult{
 		IPAddress:    "199.83.128.60",
-		ResponseCode: "127.0.0.2,127.0.0.4",
+		ResponseCode: &codes,
 	}
 
 	ipRes, err := s.Create(traceID, newIP, now)
@@ -101,8 +102,9 @@ func TestIPResult(t *testing.T) {
 	}
 	t.Logf("\t%s\tTest %d:\tShould get back the same IP result.", success, testID)
 
+	code := "127.0.0.4"
 	upd := ipresult.UpdateIPResult{
-		ResponseCode: "127.0.0.4",
+		ResponseCode: &code,
 	}
 
 	// ============================================================================
@@ -114,8 +116,9 @@ func TestIPResult(t *testing.T) {
 
 	// ============================================================================
 	// AddOrUpdate (Add)
+	code = "127.0.0.6"
 	upd = ipresult.UpdateIPResult{
-		ResponseCode: "127.0.0.6",
+		ResponseCode: &code,
 	}
 	newIPAddr := "18.205.180.52"
 
@@ -124,8 +127,9 @@ func TestIPResult(t *testing.T) {
 	}
 	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
 
+	code = "127.0.1.0"
 	upd = ipresult.UpdateIPResult{
-		ResponseCode: "127.0.1.0",
+		ResponseCode: &code,
 	}
 
 	// ============================================================================
@@ -144,4 +148,22 @@ func TestIPResult(t *testing.T) {
 		t.Fatalf("\t%s\tTest %d:\tShould get back the updated response codes. Diff:\n %s.", failure, testID, diff)
 	}
 	t.Logf("\t%s\tTest %d:\tShould get back the updated response codes.", success, testID)
+
+	// ============================================================================
+	// AddOrUpdate with no response codes
+	upd = ipresult.UpdateIPResult{}
+	if _, err := s.AddOrUpdate(traceID, ipRes.IPAddress, upd, now); err != nil {
+		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
+	}
+	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
+
+	saved, err = s.QueryByIP(traceID, ipRes.IPAddress)
+	if err != nil {
+		t.Fatalf("unable to retrieve store result %v", err)
+	}
+
+	if saved.ResponseCode != nil {
+		t.Fatalf("\t%s\tTest %d:\tResponse code should be nil  : %s.", failure, testID, *saved.ResponseCode)
+	}
+	t.Logf("\t%s\tTest %d:\tResponse code should be nil.", success, testID)
 }

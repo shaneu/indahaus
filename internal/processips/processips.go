@@ -67,10 +67,11 @@ func (s Store) ProcessIPs(ips []string, traceID string) {
 				}
 			}
 
-			up := ipresult.UpdateIPResult{
-				// we are concatenating multiple response codes into a single string. We may descide to store response codes
-				// in a separate table in the future based on a FK relationship but for simplicities sake we are storing as a single string
-				ResponseCode: strings.Join(codes, ","),
+			up := ipresult.UpdateIPResult{}
+
+			if codes != nil {
+				codes := strings.Join(codes, ",")
+				up.ResponseCode = &codes
 			}
 
 			_, err = s.dataStore.AddOrUpdate(traceID, ipAddr, up, time.Now())
