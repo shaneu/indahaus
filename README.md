@@ -75,7 +75,7 @@ make test
 Clone the repo:
 
 ```bash
-git clone https://github.com/shaneu/indahaus
+git clone https://github.com/shaneu/indahaus.git
 cd indahaus
 ```
 
