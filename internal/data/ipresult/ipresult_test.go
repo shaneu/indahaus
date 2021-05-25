@@ -102,30 +102,18 @@ func TestIPResult(t *testing.T) {
 	}
 	t.Logf("\t%s\tTest %d:\tShould get back the same IP result.", success, testID)
 
-	code := "127.0.0.4"
-	upd := ipresult.UpdateIPResult{
-		ResponseCode: &code,
-	}
-
-	// ============================================================================
-	// Update IP result
-	if _, err := s.Update(traceID, ipRes.IPAddress, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to update IP result : %s.", failure, testID, err)
-	}
-	t.Logf("\t%s\tTest %d:\tShould be able to update IP result.", success, testID)
-
 	// ============================================================================
 	// AddOrUpdate (Add)
-	code = "127.0.0.6"
-	upd = ipresult.UpdateIPResult{
+	code := "127.0.0.6"
+	upd := ipresult.UpdateIPResult{
 		ResponseCode: &code,
 	}
 	newIPAddr := "18.205.180.52"
 
 	if _, err := s.AddOrUpdate(traceID, newIPAddr, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update (add) : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
+	t.Logf("\t%s\tTest %d:\tShould be able to add or update (add).", success, testID)
 
 	code = "127.0.1.0"
 	upd = ipresult.UpdateIPResult{
@@ -133,11 +121,11 @@ func TestIPResult(t *testing.T) {
 	}
 
 	// ============================================================================
-	// AddOrUpdate  (Update)
+	// AddOrUpdate  (Update original row)
 	if _, err := s.AddOrUpdate(traceID, ipRes.IPAddress, upd, now); err != nil {
-		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update : %s.", failure, testID, err)
+		t.Fatalf("\t%s\tTest %d:\tShould be able to add or update (update) : %s.", failure, testID, err)
 	}
-	t.Logf("\t%s\tTest %d:\tShould be able to add or update.", success, testID)
+	t.Logf("\t%s\tTest %d:\tShould be able to add or update (update).", success, testID)
 
 	saved, err = s.QueryByIP(traceID, ipRes.IPAddress)
 	if err != nil {
