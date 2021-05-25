@@ -65,7 +65,7 @@ func (s Store) Update(traceID string, ip string, uIP UpdateIPResult, now time.Ti
 	ipRes.UpdatedAt = now.UTC()
 	ipRes.ResponseCode = uIP.ResponseCode
 
-	const q = `UPDATE ip_results SET "updated_at" = $2,	"response_code" = $3 WHERE ip_address = $1`
+	const q = `UPDATE ip_results SET "updated_at" = $2, "response_code" = $3 WHERE ip_address = $1`
 
 	s.log.Printf("%s : query : %s ipresult.Update", traceID, ip)
 
